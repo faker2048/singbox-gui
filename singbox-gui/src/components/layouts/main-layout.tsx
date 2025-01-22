@@ -13,8 +13,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <header className="h-14 border-b flex items-center justify-between px-4">
-          <div className="text-lg font-semibold">SingBox Manager</div>
+        <header className="h-14 border-b flex items-center justify-end px-4">
           <div className="flex items-center gap-2">
             <ModeToggle />
           </div>
