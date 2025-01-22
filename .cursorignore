@@ -1,0 +1,44 @@
+# 依赖目录
+node_modules/
+target/
+dist/
+build/
+
+# 构建输出
+*.log
+.next/
+out/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 配置
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+
+# 环境变量
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 缓存文件
+.cache/
+.npm/
+.pnpm-store/
+
+# Rust 相关
+Cargo.lock
+**/*.rs.bk
+
+# 其他
+*.pdb
+*.bak
+*.swp
+*.swo 
