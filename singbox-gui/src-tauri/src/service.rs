@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::process::{Child, Command};
 use std::sync::Mutex;
 use tauri::State;
@@ -19,6 +20,10 @@ impl ServiceManager {
             return Err("Service is already running".to_string());
         }
 
+        if !Path::new(config_path).exists() {
+            return Err(format!("Config '{}' file not found", config_path));
+        }
+
         let child = Command::new("sing-box")
             .arg("run")
             .arg("-c")
@@ -33,8 +38,12 @@ impl ServiceManager {
     pub fn stop(&self) -> Result<(), String> {
         let mut process = self.process.lock().unwrap();
         if let Some(mut child) = process.take() {
-            child.kill().map_err(|e| format!("Failed to stop service: {}", e))?;
-            child.wait().map_err(|e| format!("Failed to wait for service: {}", e))?;
+            child
+                .kill()
+                .map_err(|e| format!("Failed to stop service: {}", e))?;
+            child
+                .wait()
+                .map_err(|e| format!("Failed to wait for service: {}", e))?;
             Ok(())
         } else {
             Err("Service is not running".to_string())
@@ -63,4 +72,4 @@ pub async fn stop_service(service: State<'_, ServiceManager>) -> Result<(), Stri
 #[tauri::command]
 pub async fn get_service_status(service: State<'_, ServiceManager>) -> Result<bool, String> {
     Ok(service.is_running())
-} 
+}
