@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { FileJson, Upload, Plus, Check, X, FileCode, Clipboard, Power } from "lucide-react"
 import { useState } from "react"
+import React from "react"
 
 interface Config {
   id: string
@@ -24,11 +25,21 @@ export default function ConfigPage() {
   const [newConfigName, setNewConfigName] = useState("")
   const [isValidating, setIsValidating] = useState(false)
   const [importMethod, setImportMethod] = useState<"file" | "clipboard" | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleImportFromFile = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "请选择文件",
+        description: "请先选择一个配置文件",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      // TODO: 调用 Tauri 命令从文件导入配置
-      const content = "imported content"
+      const content = await selectedFile.text()
       setConfigContent(content)
       toast({
         title: "配置已导入",
@@ -99,6 +110,17 @@ export default function ConfigPage() {
     })
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
+
+  const handleFileButtonClick = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <MainLayout>
       <div className="grid gap-4">
@@ -149,6 +171,30 @@ export default function ConfigPage() {
                       value={newConfigName}
                       onChange={(e) => setNewConfigName(e.target.value)}
                     />
+                    {importMethod === "file" && (
+                      <div className="flex gap-2">
+                        <Input
+                          readOnly
+                          value={selectedFile?.name || ""}
+                          placeholder="选择配置文件..."
+                          className="flex-1"
+                        />
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          accept=".json"
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleFileButtonClick}
+                        >
+                          浏览...
+                        </Button>
+                      </div>
+                    )}
                     {importMethod === "clipboard" && (
                       <textarea
                         value={configContent}
