@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useServiceStore } from "@/lib/store"
 import { startService, stopService, restartService, checkServiceStatus } from "@/lib/service"
 import { Play, Square, RefreshCw } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { useEffect } from "react"
 
 export default function ServicePage() {
