@@ -28,7 +28,7 @@ export default function ConfigPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  const handleImportFromFile = async () => {
+  const handleSaveFromImportedFile = async () => {
     if (!selectedFile) {
       toast({
         title: "请选择文件",
@@ -41,10 +41,7 @@ export default function ConfigPage() {
     try {
       const content = await selectedFile.text()
       setConfigContent(content)
-      toast({
-        title: "配置已导入",
-        description: "配置文件已成功导入",
-      })
+      handleSaveConfigContent(content)
     } catch (error) {
       toast({
         title: "导入失败",
@@ -54,24 +51,41 @@ export default function ConfigPage() {
     }
   }
 
-  const handleSaveConfig = () => {
-    if (!newConfigName || !configContent) return
+  const handleSaveConfigContent = (fileContent?: string) => {
+    const content = fileContent || configContent
+    if (!newConfigName || !content) {
+      toast({
+        title: "无法保存",
+        description: "配置名称和内容不能为空",
+        variant: "destructive",
+      })
+      return
+    }
 
     const newConfig: Config = {
       id: Date.now().toString(),
       name: newConfigName,
-      content: configContent,
+      content: content,
     }
 
     setConfigs([...configs, newConfig])
     setNewConfigName("")
     setConfigContent("")
+    setSelectedFile(null)
     setImportMethod(null)
 
     toast({
       title: "配置已保存",
       description: "新配置已成功保存",
     })
+  }
+
+  const handleSaveButtonClick = () => {
+    if (importMethod === "file") {
+      handleSaveFromImportedFile()
+    } else {
+      handleSaveConfigContent()
+    }
   }
 
   const handleValidateConfig = async () => {
@@ -110,14 +124,14 @@ export default function ConfigPage() {
     })
   }
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setSelectedFile(file)
     }
   }
 
-  const handleFileButtonClick = () => {
+  const handleBrowseButtonClick = () => {
     fileInputRef.current?.click()
   }
 
@@ -182,14 +196,14 @@ export default function ConfigPage() {
                         <input
                           type="file"
                           ref={fileInputRef}
-                          onChange={handleFileSelect}
+                          onChange={handleFileInputChange}
                           accept=".json"
                           className="hidden"
                         />
                         <Button
                           type="button"
                           variant="secondary"
-                          onClick={handleFileButtonClick}
+                          onClick={handleBrowseButtonClick}
                         >
                           浏览...
                         </Button>
@@ -206,7 +220,7 @@ export default function ConfigPage() {
                   </div>
                   <DialogFooter>
                     <Button
-                      onClick={importMethod === "file" ? handleImportFromFile : handleSaveConfig}
+                      onClick={handleSaveButtonClick}
                       disabled={!newConfigName || (importMethod === "clipboard" && !configContent)}
                     >
                       保存配置
