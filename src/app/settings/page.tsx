@@ -3,7 +3,7 @@
 import { MainLayout } from "@/components/layouts/main-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Settings, Languages, Moon, Sun, Monitor } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useState } from "react"
