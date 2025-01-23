@@ -17,7 +17,7 @@ export default function SettingsPage() {
     setLanguage(lang)
     toast({
       title: "语言已更改",
-      description: "应用语言设置已更新",
+      description: "TODO: 应用语言设置已更新",
     })
   }
 
