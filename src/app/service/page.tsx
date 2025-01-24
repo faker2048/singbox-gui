@@ -21,6 +21,7 @@ export default function ServicePage() {
   const setStatus = useServiceStore((state) => state.setStatus)
   const { toast } = useToast()
   const [activeConfig, setActiveConfig] = useState<Config | null>(null)
+  const [singboxVersion, setSingboxVersion] = useState<string>("")
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -41,6 +42,15 @@ export default function ServicePage() {
 
     return () => clearInterval(interval)
   }, [setStatus])
+
+  useEffect(() => {
+    setSingboxVersion("retrieving...")
+    const getVersion = async () => {
+      const version = await invoke<string>("get_singbox_version")
+      setSingboxVersion(version)
+    }
+    getVersion()
+  }, [])
 
   const handleStartService = async () => {
     if (!activeConfig) {
@@ -153,6 +163,9 @@ export default function ServicePage() {
               </div>
               <div className="text-sm text-muted-foreground">
                 当前配置: {activeConfig ? activeConfig.name : "未选择"}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                当前 sing-box 版本: {singboxVersion}
               </div>
             </div>
           </CardContent>

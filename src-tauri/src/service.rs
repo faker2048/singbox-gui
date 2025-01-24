@@ -54,6 +54,23 @@ impl ServiceManager {
         let process = self.process.lock().unwrap();
         process.is_some()
     }
+
+    pub fn get_singbox_version(&self) -> Result<String, String> {
+        // one-shot run `sing-box version`
+        let output = match Command::new("sing-box").arg("version").output() {
+            Ok(output) => output,
+            Err(_) => return Err("Failed to execute sing-box version".to_string()),
+        };
+
+        let version = match String::from_utf8(output.stdout) {
+            Ok(v) => v,
+            Err(_) => return Err("Failed to execute sing-box version".to_string()),
+        };
+
+        let re = regex::Regex::new(r"version\s+(\d+\.\d+\.\d+)").unwrap();
+        let version = re.find(&version).unwrap().as_str().to_string();
+        Ok(version)
+    }
 }
 
 #[tauri::command]
@@ -72,4 +89,9 @@ pub async fn stop_service(service: State<'_, ServiceManager>) -> Result<(), Stri
 #[tauri::command]
 pub async fn get_service_status(service: State<'_, ServiceManager>) -> Result<bool, String> {
     Ok(service.is_running())
+}
+
+#[tauri::command]
+pub async fn get_singbox_version(service: State<'_, ServiceManager>) -> Result<String, String> {
+    service.get_singbox_version()
 }

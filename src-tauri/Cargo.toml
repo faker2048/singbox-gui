@@ -24,3 +24,4 @@ log = "0.4"
 tauri = { version = "2.2.3", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 dirs = "6.0.0"
+regex = "1.11.1"

@@ -1,18 +1,19 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod service;
 mod config;
+mod service;
 
-use tauri::Manager;
-use service::{ServiceManager, start_service, stop_service, get_service_status};
-use config::singbox::{
-    State as SingboxConfigState,
-    get_configs, get_active_config, save_config, remove_config, set_active_config,
-    write_config_file,
-};
 use config::app::get_app_config;
+use config::singbox::{
+    get_active_config, get_configs, remove_config, save_config, set_active_config,
+    write_config_file, State as SingboxConfigState,
+};
+use service::{
+    get_service_status, get_singbox_version, start_service, stop_service, ServiceManager,
+};
 use std::sync::Mutex;
+use tauri::Manager;
 
 fn main() {
     tauri::Builder::default()
@@ -28,6 +29,7 @@ fn main() {
             start_service,
             stop_service,
             get_service_status,
+            get_singbox_version,
             get_configs,
             get_active_config,
             save_config,
