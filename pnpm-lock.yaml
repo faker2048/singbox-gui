@@ -24,7 +24,7 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       '@tauri-apps/plugin-dialog':
-        specifier: ~2
+        specifier: ~2.2.0
         version: 2.2.0
       cmdk:
         specifier: ^1.0.4
