@@ -7,20 +7,33 @@ import { useServiceStore } from "@/lib/store"
 import { startService, stopService, restartService, checkServiceStatus } from "@/lib/service"
 import { Play, Square, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { invoke } from "@tauri-apps/api/core"
+
+interface Config {
+  id: string
+  name: string
+  path: string
+}
 
 export default function ServicePage() {
   const service = useServiceStore((state) => state.service)
   const setStatus = useServiceStore((state) => state.setStatus)
   const { toast } = useToast()
-
-  // TODO: 从配置中获取配置文件路径
-  const configPath = "config.json"
+  const [activeConfig, setActiveConfig] = useState<Config | null>(null)
 
   useEffect(() => {
     const checkStatus = async () => {
-      const isRunning = await checkServiceStatus()
-      setStatus(isRunning ? "running" : "stopped")
+      try {
+        const [isRunning, config] = await Promise.all([
+          checkServiceStatus(),
+          invoke<Config | null>("get_active_config")
+        ])
+        setStatus(isRunning ? "running" : "stopped")
+        setActiveConfig(config)
+      } catch (error) {
+        console.error("检查状态失败:", error)
+      }
     }
 
     checkStatus()
@@ -30,12 +43,21 @@ export default function ServicePage() {
   }, [setStatus])
 
   const handleStartService = async () => {
+    if (!activeConfig) {
+      toast({
+        title: "无法启动服务",
+        description: "请先选择一个配置文件",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      await startService(configPath)
+      await startService(activeConfig.path)
       setStatus("running")
       toast({
         title: "服务已启动",
-        description: "sing-box 服务已成功启动",
+        description: `sing-box 服务已使用配置 "${activeConfig.name}" 启动`,
       })
     } catch (error) {
       toast({
@@ -64,12 +86,21 @@ export default function ServicePage() {
   }
 
   const handleRestartService = async () => {
+    if (!activeConfig) {
+      toast({
+        title: "无法重启服务",
+        description: "请先选择一个配置文件",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      await restartService(configPath)
+      await restartService(activeConfig.path)
       setStatus("running")
       toast({
         title: "服务已重启",
-        description: "sing-box 服务已成功重启",
+        description: `sing-box 服务已使用配置 "${activeConfig.name}" 重启`,
       })
     } catch (error) {
       toast({
@@ -94,7 +125,7 @@ export default function ServicePage() {
             <div className="flex items-center gap-4">
               <Button
                 onClick={handleStartService}
-                disabled={service.status === "running"}
+                disabled={service.status === "running" || !activeConfig}
               >
                 <Play className="mr-2 h-4 w-4" />
                 启动服务
@@ -109,15 +140,20 @@ export default function ServicePage() {
               </Button>
               <Button
                 onClick={handleRestartService}
-                disabled={service.status === "stopped"}
+                disabled={service.status === "stopped" || !activeConfig}
                 variant="outline"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 重启服务
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground">
-              当前状态: {service.status === "running" ? "运行中" : "已停止"}
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                当前状态: {service.status === "running" ? "运行中" : "已停止"}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                当前配置: {activeConfig ? activeConfig.name : "未选择"}
+              </div>
             </div>
           </CardContent>
         </Card>
