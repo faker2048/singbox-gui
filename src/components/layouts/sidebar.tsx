@@ -43,7 +43,7 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="w-64 border-r h-screen flex flex-col">
+    <div className="w-48 border-r h-screen flex flex-col">
       <div className="h-14 border-b flex items-center px-4">
         <span className="font-bold text-lg">SingBox Manager</span>
       </div>

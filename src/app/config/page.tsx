@@ -6,14 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { invoke } from "@tauri-apps/api/core"
+import { join } from "@tauri-apps/api/path"
 import { FileJson, Upload, Plus, Check, X, FileCode, Clipboard, Power } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import React from "react"
 
 interface Config {
   id: string
   name: string
-  content: string
+  path: string  // 配置文件的路径
 }
 
 export default function ConfigPage() {
@@ -21,12 +23,124 @@ export default function ConfigPage() {
   const [configs, setConfigs] = useState<Config[]>([])
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
-  const [configContent, setConfigContent] = useState("")
   const [newConfigName, setNewConfigName] = useState("")
   const [isValidating, setIsValidating] = useState(false)
   const [importMethod, setImportMethod] = useState<"file" | "clipboard" | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [configContent, setConfigContent] = useState("")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    // 初始化时加载配置列表和当前激活的配置
+    const initializeConfigs = async () => {
+      try {
+        const [configsData, activeConfig] = await Promise.all([
+          invoke<Config[]>("get_configs"),
+          invoke<Config | null>("get_active_config")
+        ]);
+        
+        setConfigs(configsData);
+        if (activeConfig) {
+          setActiveConfigId(activeConfig.id);
+        }
+
+        // 获取服务运行状态
+        const status = await invoke<boolean>("get_service_status");
+        setIsRunning(status);
+      } catch (error) {
+        toast({
+          title: "加载配置失败",
+          description: "无法读取配置信息",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializeConfigs();
+  }, []);
+
+  const handleSaveConfig = async (content: string) => {
+    if (!newConfigName) {
+      toast({
+        title: "无法保存",
+        description: "配置名称不能为空",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // 获取配置目录
+      const appConfig = await invoke<{ config_dir: string }>("get_app_config");
+      const configDir = appConfig.config_dir;
+      
+      // 生成配置文件路径
+      const configId = Date.now().toString();
+      const configFileName = `${configId}.json`;
+      const configPath = await join(configDir, configFileName);
+
+      // 保存配置文件
+      await invoke("save_config", {
+        config: {
+          id: configId,
+          name: newConfigName,
+          path: configPath,
+        }
+      });
+
+      // 写入配置内容到文件
+      await invoke("write_config_file", {
+        path: configPath,
+        content: content
+      });
+
+      // 更新状态
+      const newConfigs = await invoke<Config[]>("get_configs");
+      setConfigs(newConfigs);
+      
+      setNewConfigName("");
+      setConfigContent("");
+      setSelectedFile(null);
+      setImportMethod(null);
+
+      toast({
+        title: "配置已保存",
+        description: "新配置已成功保存",
+      });
+    } catch (error) {
+      toast({
+        title: "保存失败",
+        description: `无法保存配置: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleActivateConfig = async (configId: string) => {
+    if (isRunning) {
+      toast({
+        title: "无法切换",
+        description: "sing-box 正在运行中，请先停止运行",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await invoke("set_active_config", { id: configId });
+      setActiveConfigId(configId);
+      toast({
+        title: "配置已激活",
+        description: "配置已切换",
+      });
+    } catch (error) {
+      toast({
+        title: "切换失败",
+        description: "无法切换配置",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSaveFromImportedFile = async () => {
     if (!selectedFile) {
@@ -34,59 +148,41 @@ export default function ConfigPage() {
         title: "请选择文件",
         description: "请先选择一个配置文件",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      const content = await selectedFile.text()
-      setConfigContent(content)
-      handleSaveConfigContent(content)
+      const content = await selectedFile.text();
+      // 验证 JSON 格式
+      JSON.parse(content);
+      await handleSaveConfig(content);
     } catch (error) {
       toast({
         title: "导入失败",
-        description: "无法导入配置文件",
+        description: "配置文件格式无效",
         variant: "destructive",
-      })
+      });
     }
-  }
-
-  const handleSaveConfigContent = (fileContent?: string) => {
-    const content = fileContent || configContent
-    if (!newConfigName || !content) {
-      toast({
-        title: "无法保存",
-        description: "配置名称和内容不能为空",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const newConfig: Config = {
-      id: Date.now().toString(),
-      name: newConfigName,
-      content: content,
-    }
-
-    setConfigs([...configs, newConfig])
-    setNewConfigName("")
-    setConfigContent("")
-    setSelectedFile(null)
-    setImportMethod(null)
-
-    toast({
-      title: "配置已保存",
-      description: "新配置已成功保存",
-    })
-  }
+  };
 
   const handleSaveButtonClick = () => {
     if (importMethod === "file") {
-      handleSaveFromImportedFile()
-    } else {
-      handleSaveConfigContent()
+      handleSaveFromImportedFile();
+    } else if (importMethod === "clipboard") {
+      try {
+        // 验证 JSON 格式
+        JSON.parse(configContent);
+        handleSaveConfig(configContent);
+      } catch (error) {
+        toast({
+          title: "保存失败",
+          description: "配置内容格式无效",
+          variant: "destructive",
+        });
+      }
     }
-  }
+  };
 
   const handleValidateConfig = async () => {
     try {
@@ -105,23 +201,6 @@ export default function ConfigPage() {
     } finally {
       setIsValidating(false)
     }
-  }
-
-  const handleActivateConfig = async (configId: string) => {
-    if (isRunning) {
-      toast({
-        title: "无法切换",
-        description: "sing-box 正在运行中，请先停止运行",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setActiveConfigId(configId)
-    toast({
-      title: "配置已激活",
-      description: "配置已切换",
-    })
   }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
