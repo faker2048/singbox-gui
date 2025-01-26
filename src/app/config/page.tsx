@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { invoke } from "@tauri-apps/api/core"
 import { join } from "@tauri-apps/api/path"
-import { FileJson, Upload, Plus, Check, X, FileCode, Clipboard, Power } from "lucide-react"
+import { Command, open } from '@tauri-apps/plugin-shell'
+import * as Icon from "lucide-react"
 import { useEffect, useState } from "react"
 import React from "react"
 
@@ -38,7 +39,7 @@ export default function ConfigPage() {
           invoke<Config[]>("get_configs"),
           invoke<Config | null>("get_active_config")
         ]);
-        
+
         setConfigs(configsData);
         if (activeConfig) {
           setActiveConfigId(activeConfig.id);
@@ -73,7 +74,7 @@ export default function ConfigPage() {
       // 获取配置目录
       const appConfig = await invoke<{ config_dir: string }>("get_app_config");
       const configDir = appConfig.config_dir;
-      
+
       // 生成配置文件路径
       const configId = Date.now().toString();
       const configFileName = `${configId}.json`;
@@ -97,7 +98,7 @@ export default function ConfigPage() {
       // 更新状态
       const newConfigs = await invoke<Config[]>("get_configs");
       setConfigs(newConfigs);
-      
+
       setNewConfigName("");
       setConfigContent("");
       setSelectedFile(null);
@@ -184,24 +185,6 @@ export default function ConfigPage() {
     }
   };
 
-  const handleValidateConfig = async () => {
-    try {
-      setIsValidating(true)
-      // TODO: 调用 Tauri 命令验证配置
-      toast({
-        title: "配置有效",
-        description: "配置文件验证通过",
-      })
-    } catch (error) {
-      toast({
-        title: "验证失败",
-        description: "配置文件验证未通过",
-        variant: "destructive",
-      })
-    } finally {
-      setIsValidating(false)
-    }
-  }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -214,6 +197,24 @@ export default function ConfigPage() {
     fileInputRef.current?.click()
   }
 
+  const handleEditConfig = async (configPath: string) => {
+    try {
+      await open(configPath)
+    } catch (error) {
+      toast({
+        title: "打开失败",
+        description: error instanceof Error ? error.message : "无法打开配置文件",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleRemoveConfig = async (configId: string) => {
+    await invoke("remove_config", { id: configId });
+    const newConfigs = await invoke<Config[]>("get_configs");
+    setConfigs(newConfigs);
+  }
+
   return (
     <MainLayout>
       <div className="grid gap-4">
@@ -222,14 +223,11 @@ export default function ConfigPage() {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>配置管理</CardTitle>
-                <CardDescription>
-                  管理 sing-box 的配置文件
-                </CardDescription>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Icon.Plus className="mr-2 h-4 w-4" />
                     新建配置
                   </Button>
                 </DialogTrigger>
@@ -247,7 +245,7 @@ export default function ConfigPage() {
                         className="w-full"
                         onClick={() => setImportMethod("file")}
                       >
-                        <FileCode className="mr-2 h-4 w-4" />
+                        <Icon.FileCode className="mr-2 h-4 w-4" />
                         从文件导入
                       </Button>
                       <Button
@@ -255,7 +253,7 @@ export default function ConfigPage() {
                         className="w-full"
                         onClick={() => setImportMethod("clipboard")}
                       >
-                        <Clipboard className="mr-2 h-4 w-4" />
+                        <Icon.Clipboard className="mr-2 h-4 w-4" />
                         从剪贴板导入
                       </Button>
                     </div>
@@ -312,16 +310,13 @@ export default function ConfigPage() {
           <CardContent>
             <div className="space-y-4">
               {configs.map((config) => (
-                <Card key={config.id}>
+                <Card key={config.id}
+                className={activeConfigId === config.id ? "border-green-500/30 bg-green-100/20 dark:border-green-500/30 dark:bg-green-950/30" : ""}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="font-medium">{config.name}</div>
-                        {activeConfigId === config.id && (
-                          <span className="text-sm text-muted-foreground">
-                            (当前使用)
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -330,8 +325,22 @@ export default function ConfigPage() {
                           onClick={() => handleActivateConfig(config.id)}
                           disabled={activeConfigId === config.id || isRunning}
                         >
-                          <Power className="mr-2 h-4 w-4" />
-                          使用此配置
+                          {activeConfigId === config.id ? <Icon.CircleDot /> :
+                            <Icon.Play />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditConfig(config.path)}
+                        >
+                          <Icon.Pencil />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveConfig(config.id)}
+                        >
+                          <Icon.Trash />
                         </Button>
                       </div>
                     </div>
