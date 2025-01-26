@@ -20,6 +20,28 @@ impl ServiceManager {
         Ok(config.singbox_path)
     }
 
+    fn create_elevated_command(program: &str, args: &[&str]) -> Command {
+        #[cfg(target_os = "windows")]
+        {
+            let mut cmd = Command::new("powershell");
+            let args_str = args.join(" ");
+            let command = format!(
+                "Start-Process -FilePath '{}' -ArgumentList '{}' -Verb RunAs -Wait",
+                program, args_str
+            );
+            cmd.args(&["-Command", &command]);
+            cmd
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let mut cmd = Command::new("pkexec");
+            cmd.arg(program);
+            cmd.args(args);
+            cmd
+        }
+    }
+
     pub fn start(&self, config_path: &str) -> Result<(), String> {
         let mut process = self.process.lock().unwrap();
         if process.is_some() {
@@ -31,10 +53,8 @@ impl ServiceManager {
         }
 
         let singbox_path = Self::get_singbox_path()?;
-        let child = Command::new(singbox_path)
-            .arg("run")
-            .arg("-c")
-            .arg(config_path)
+
+        let child = Self::create_elevated_command(&singbox_path, &["run", "-c", config_path])
             .spawn()
             .map_err(|e| format!("Failed to start service: {}", e))?;
 
@@ -45,9 +65,25 @@ impl ServiceManager {
     pub fn stop(&self) -> Result<(), String> {
         let mut process = self.process.lock().unwrap();
         if let Some(mut child) = process.take() {
-            child
-                .kill()
-                .map_err(|e| format!("Failed to stop service: {}", e))?;
+            #[cfg(target_os = "windows")]
+            {
+                // Windows 下使用 taskkill 强制结束进程
+                Command::new("powershell")
+                    .args(&[
+                        "-Command",
+                        "Start-Process -FilePath 'taskkill' -ArgumentList '/F', '/PID', '$PID' -Verb RunAs",
+                    ])
+                    .spawn()
+                    .map_err(|e| format!("Failed to stop service: {}", e))?;
+            }
+
+            #[cfg(not(target_os = "windows"))]
+            {
+                child
+                    .kill()
+                    .map_err(|e| format!("Failed to stop service: {}", e))?;
+            }
+
             child
                 .wait()
                 .map_err(|e| format!("Failed to wait for service: {}", e))?;
