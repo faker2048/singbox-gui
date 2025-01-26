@@ -19,7 +19,7 @@ interface Config {
   path: string  // 配置文件的路径
 }
 
-export default function ConfigPage() {
+export default function ConfigCard() {
   const { toast } = useToast()
   const [configs, setConfigs] = useState<Config[]>([])
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null)
@@ -216,146 +216,144 @@ export default function ConfigPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>配置管理</CardTitle>
-              </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Icon.Plus className="mr-2 h-4 w-4" />
-                    新建配置
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>新建配置</DialogTitle>
-                    <DialogDescription>
-                      选择导入方式并为配置文件命名
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        variant={importMethod === "file" ? "default" : "outline"}
-                        className="w-full"
-                        onClick={() => setImportMethod("file")}
-                      >
-                        <Icon.FileCode className="mr-2 h-4 w-4" />
-                        从文件导入
-                      </Button>
-                      <Button
-                        variant={importMethod === "clipboard" ? "default" : "outline"}
-                        className="w-full"
-                        onClick={() => setImportMethod("clipboard")}
-                      >
-                        <Icon.Clipboard className="mr-2 h-4 w-4" />
-                        从剪贴板导入
-                      </Button>
-                    </div>
-                    <Input
-                      placeholder="配置名称"
-                      value={newConfigName}
-                      onChange={(e) => setNewConfigName(e.target.value)}
-                    />
-                    {importMethod === "file" && (
-                      <div className="flex gap-2">
-                        <Input
-                          readOnly
-                          value={selectedFile?.name || ""}
-                          placeholder="选择配置文件..."
-                          className="flex-1"
-                        />
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileInputChange}
-                          accept=".json"
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={handleBrowseButtonClick}
-                        >
-                          浏览...
-                        </Button>
-                      </div>
-                    )}
-                    {importMethod === "clipboard" && (
-                      <textarea
-                        value={configContent}
-                        onChange={(e) => setConfigContent(e.target.value)}
-                        className="w-full h-[200px] p-4 font-mono text-sm bg-muted rounded-md resize-none"
-                        placeholder="在此粘贴配置文件内容..."
-                      />
-                    )}
-                  </div>
-                  <DialogFooter>
+    <div className="grid gap-4">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>配置管理</CardTitle>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Icon.Plus className="mr-2 h-4 w-4" />
+                  新建配置
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>新建配置</DialogTitle>
+                  <DialogDescription>
+                    选择导入方式并为配置文件命名
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <Button
-                      onClick={handleSaveButtonClick}
-                      disabled={!newConfigName || (importMethod === "clipboard" && !configContent)}
+                      variant={importMethod === "file" ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => setImportMethod("file")}
                     >
-                      保存配置
+                      <Icon.FileCode className="mr-2 h-4 w-4" />
+                      从文件导入
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {configs.map((config) => (
-                <Card key={config.id}
-                className={activeConfigId === config.id ? "border-green-500/30 bg-green-100/20 dark:border-green-500/30 dark:bg-green-950/30" : ""}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="font-medium">{config.name}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleActivateConfig(config.id)}
-                          disabled={activeConfigId === config.id || isRunning}
-                        >
-                          {activeConfigId === config.id ? <Icon.CircleDot /> :
-                            <Icon.Play />}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditConfig(config.path)}
-                        >
-                          <Icon.Pencil />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRemoveConfig(config.id)}
-                        >
-                          <Icon.Trash />
-                        </Button>
-                      </div>
+                    <Button
+                      variant={importMethod === "clipboard" ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => setImportMethod("clipboard")}
+                    >
+                      <Icon.Clipboard className="mr-2 h-4 w-4" />
+                      从剪贴板导入
+                    </Button>
+                  </div>
+                  <Input
+                    placeholder="配置名称"
+                    value={newConfigName}
+                    onChange={(e) => setNewConfigName(e.target.value)}
+                  />
+                  {importMethod === "file" && (
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={selectedFile?.name || ""}
+                        placeholder="选择配置文件..."
+                        className="flex-1"
+                      />
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileInputChange}
+                        accept=".json"
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleBrowseButtonClick}
+                      >
+                        浏览...
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {configs.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  暂无配置，请点击"新建配置"按钮添加
+                  )}
+                  {importMethod === "clipboard" && (
+                    <textarea
+                      value={configContent}
+                      onChange={(e) => setConfigContent(e.target.value)}
+                      className="w-full h-[200px] p-4 font-mono text-sm bg-muted rounded-md resize-none"
+                      placeholder="在此粘贴配置文件内容..."
+                    />
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </MainLayout>
+                <DialogFooter>
+                  <Button
+                    onClick={handleSaveButtonClick}
+                    disabled={!newConfigName || (importMethod === "clipboard" && !configContent)}
+                  >
+                    保存配置
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {configs.map((config) => (
+              <Card key={config.id}
+                className={activeConfigId === config.id ? "border-green-500/30 bg-green-100/20 dark:border-green-500/30 dark:bg-green-950/30" : ""}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="font-medium">{config.name}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleActivateConfig(config.id)}
+                        disabled={activeConfigId === config.id || isRunning}
+                      >
+                        {activeConfigId === config.id ? <Icon.CircleDot /> :
+                          <Icon.Play />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditConfig(config.path)}
+                      >
+                        <Icon.Pencil />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveConfig(config.id)}
+                      >
+                        <Icon.Trash />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {configs.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                暂无配置，请点击"新建配置"按钮添加
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 } 

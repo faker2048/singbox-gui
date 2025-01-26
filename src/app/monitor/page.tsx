@@ -20,38 +20,6 @@ export default function MonitorPage() {
     <MainLayout>
       <div className="grid gap-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4" />
-                <CardTitle>CPU 使用率</CardTitle>
-              </div>
-              <CardDescription>
-                实时 CPU 使用情况监控
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                CPU 使用率图表区域
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <MemoryStick className="h-4 w-4" />
-                <CardTitle>内存使用</CardTitle>
-              </div>
-              <CardDescription>
-                实时内存使用情况监控
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                内存使用图表区域
-              </div>
-            </CardContent>
-          </Card>
         </div>
         <Card>
           <CardHeader>

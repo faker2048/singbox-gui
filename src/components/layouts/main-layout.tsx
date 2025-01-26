@@ -1,6 +1,5 @@
 "use client"
 
-import { cn } from "@/lib/utils"
 import { Sidebar } from "@/components/layouts/sidebar"
 import { ModeToggle } from "@/components/mode-toggle"
 

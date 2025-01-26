@@ -13,22 +13,12 @@ import {
 
 const sidebarItems = [
   {
-    title: "仪表盘",
+    title: "主页",
     href: "/",
     icon: Home
   },
   {
-    title: "服务管理",
-    href: "/service",
-    icon: Terminal
-  },
-  {
-    title: "配置管理",
-    href: "/config",
-    icon: FileJson
-  },
-  {
-    title: "系统监控",
+    title: "仪表盘",
     href: "/monitor",
     icon: Activity
   },
@@ -51,7 +41,7 @@ export function Sidebar() {
         {sidebarItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
-          
+
           return (
             <Link
               key={item.href}

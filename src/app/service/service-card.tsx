@@ -1,6 +1,5 @@
 "use client"
 
-import { MainLayout } from "@/components/layouts/main-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useServiceStore } from "@/lib/store"
@@ -16,7 +15,7 @@ interface Config {
   path: string
 }
 
-export default function ServicePage() {
+export function ServiceCard() {
   const service = useServiceStore((state) => state.service)
   const setStatus = useServiceStore((state) => state.setStatus)
   const { toast } = useToast()
@@ -38,7 +37,7 @@ export default function ServicePage() {
     }
 
     checkStatus()
-    const interval = setInterval(checkStatus, 5000) // 每5秒检查一次状态
+    const interval = setInterval(checkStatus, 5000)
 
     return () => clearInterval(interval)
   }, [setStatus])
@@ -122,55 +121,47 @@ export default function ServicePage() {
   }
 
   return (
-    <MainLayout>
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>服务管理</CardTitle>
-            <CardDescription>
-              管理 sing-box 服务的运行状态
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={handleStartService}
-                disabled={service.status === "running" || !activeConfig}
-              >
-                <Play className="mr-2 h-4 w-4" />
-                启动服务
-              </Button>
-              <Button
-                onClick={handleStopService}
-                disabled={service.status === "stopped"}
-                variant="destructive"
-              >
-                <Square className="mr-2 h-4 w-4" />
-                停止服务
-              </Button>
-              <Button
-                onClick={handleRestartService}
-                disabled={service.status === "stopped" || !activeConfig}
-                variant="outline"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                重启服务
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">
-                当前状态: {service.status === "running" ? "运行中" : "已停止"}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                当前配置: {activeConfig ? activeConfig.name : "未选择"}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                当前 sing-box 版本: {singboxVersion}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </MainLayout>
+    <Card>
+      <CardHeader>
+        SingBox Core
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            配置: {activeConfig ? activeConfig.name : "未选择"}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            sing-box 版本: {singboxVersion}
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={handleStartService}
+            disabled={service.status === "running" || !activeConfig}
+          >
+            <Play />
+            启动
+          </Button>
+          <Button
+            onClick={handleStopService}
+            disabled={service.status === "stopped"}
+            variant="destructive"
+          >
+            <Square />
+            停止
+          </Button>
+          <Button
+            onClick={handleRestartService}
+            disabled={service.status === "stopped" || !activeConfig}
+            variant="outline"
+          >
+            <RefreshCw />
+            重启
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 } 
