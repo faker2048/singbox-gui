@@ -15,6 +15,7 @@ pub mod app {
     #[derive(Debug, Serialize, Deserialize)]
     pub struct Config {
         pub config_dir: String,
+        pub singbox_path: String,
     }
 
     impl Default for Config {
@@ -22,6 +23,7 @@ pub mod app {
             let default_config_dir = get_default_config_dir().to_string_lossy().to_string();
             Self {
                 config_dir: default_config_dir,
+                singbox_path: "sing-box".to_string(),
             }
         }
     }
@@ -67,6 +69,11 @@ pub mod app {
     #[tauri::command]
     pub async fn get_app_config() -> Result<Config, String> {
         load_app_config().map_err(|e| e.to_string())
+    }
+
+    #[tauri::command]
+    pub async fn update_app_config(config: Config) -> Result<(), String> {
+        save_app_config(&config).map_err(|e| e.to_string())
     }
 }
 

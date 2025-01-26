@@ -4,7 +4,7 @@
 mod config;
 mod service;
 
-use config::app::get_app_config;
+use config::app::{get_app_config, update_app_config};
 use config::singbox::{
     get_active_config, get_configs, remove_config, save_config, set_active_config,
     write_config_file, State as SingboxConfigState,
@@ -38,6 +38,7 @@ fn main() {
             set_active_config,
             write_config_file,
             get_app_config,
+            update_app_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

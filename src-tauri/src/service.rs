@@ -1,3 +1,4 @@
+use crate::config::app::{get_app_config, load_app_config, Config as AppConfig};
 use std::path::Path;
 use std::process::{Child, Command};
 use std::sync::Mutex;
@@ -14,6 +15,11 @@ impl ServiceManager {
         }
     }
 
+    fn get_singbox_path() -> Result<String, String> {
+        let config = load_app_config().unwrap();
+        Ok(config.singbox_path)
+    }
+
     pub fn start(&self, config_path: &str) -> Result<(), String> {
         let mut process = self.process.lock().unwrap();
         if process.is_some() {
@@ -24,7 +30,8 @@ impl ServiceManager {
             return Err(format!("Config '{}' file not found", config_path));
         }
 
-        let child = Command::new("sing-box")
+        let singbox_path = Self::get_singbox_path()?;
+        let child = Command::new(singbox_path)
             .arg("run")
             .arg("-c")
             .arg(config_path)
@@ -56,8 +63,8 @@ impl ServiceManager {
     }
 
     pub fn get_singbox_version(&self) -> Result<String, String> {
-        // one-shot run `sing-box version`
-        let output = match Command::new("sing-box").arg("version").output() {
+        let singbox_path = Self::get_singbox_path()?;
+        let output = match Command::new(singbox_path).arg("version").output() {
             Ok(output) => output,
             Err(_) => return Err("Failed to execute sing-box version".to_string()),
         };
