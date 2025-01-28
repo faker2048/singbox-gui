@@ -25,7 +25,6 @@ export default function ConfigCard() {
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [newConfigName, setNewConfigName] = useState("")
-  const [isValidating, setIsValidating] = useState(false)
   const [importMethod, setImportMethod] = useState<"file" | "clipboard" | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [configContent, setConfigContent] = useState("")
@@ -314,8 +313,12 @@ export default function ConfigCard() {
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col gap-1">
                       <div className="font-medium">{config.name}</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Icon.FileJson className="h-3 w-3" />
+                        {config.path}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button

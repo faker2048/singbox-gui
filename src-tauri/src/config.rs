@@ -9,7 +9,6 @@ pub mod app {
     use super::*;
 
     const APP_CONFIG_FILENAME: &str = "app_config.json";
-    const DEFAULT_CONFIG_DIR: &str = ".singbox-configs";
     const APP_NAME: &str = "singbox-gui";
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -35,7 +34,7 @@ pub mod app {
 
         if !config_dir.exists() {
             if let Err(_) = fs::create_dir_all(&config_dir) {
-                config_dir = PathBuf::from(DEFAULT_CONFIG_DIR);
+                config_dir = PathBuf::from(".").join("singbox-configs");
                 let _ = fs::create_dir_all(&config_dir);
             }
         }
@@ -80,7 +79,6 @@ pub mod app {
 pub mod singbox {
     use super::*;
 
-    const CONFIG_FILE_EXTENSION: &str = "json";
     const CONFIGS_STATE_FILENAME: &str = "configs.json";
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
