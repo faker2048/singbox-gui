@@ -45,8 +45,12 @@ export function ServiceCard() {
   useEffect(() => {
     setSingboxVersion("retrieving...")
     const getVersion = async () => {
-      const version = await invoke<string>("get_singbox_version")
-      setSingboxVersion(version)
+      try {
+        const version = await invoke<string>("get_singbox_version")
+        setSingboxVersion(version)
+      } catch (error) {
+        setSingboxVersion(String(error))
+      }
     }
     getVersion()
   }, [])

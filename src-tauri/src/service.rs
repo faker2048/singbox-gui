@@ -33,6 +33,18 @@ impl ServiceManager {
             cmd
         }
 
+        #[cfg(target_os = "macos")]
+        {
+            let mut cmd = Command::new("osascript");
+            let args_str = args.join(" ");
+            let script = format!(
+                "do shell script \"'{}' {}\" with administrator privileges",
+                program, args_str
+            );
+            cmd.args(&["-e", &script]);
+            cmd
+        }
+
         #[cfg(target_os = "linux")]
         {
             let mut cmd = Command::new("pkexec");
@@ -77,7 +89,23 @@ impl ServiceManager {
                     .map_err(|e| format!("Failed to stop service: {}", e))?;
             }
 
-            #[cfg(not(target_os = "windows"))]
+            #[cfg(target_os = "macos")]
+            {
+                // macOS 下使用 kill 命令结束进程
+                let pid = child.id();
+                Command::new("osascript")
+                    .args(&[
+                        "-e",
+                        &format!(
+                            "do shell script \"kill -9 {}\" with administrator privileges",
+                            pid
+                        ),
+                    ])
+                    .spawn()
+                    .map_err(|e| format!("Failed to stop service: {}", e))?;
+            }
+
+            #[cfg(target_os = "linux")]
             {
                 child
                     .kill()
