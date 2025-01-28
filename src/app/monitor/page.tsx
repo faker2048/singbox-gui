@@ -2,22 +2,11 @@
 
 import { MainLayout } from "@/components/layouts/main-layout"
 import { useEffect, useState } from "react"
-import GroupCard from "./group_card"
-import type { ProxyNode } from "./group_card"
+import GroupCard from "./group-card"
+import type { ProxyNode } from "./group-card"
 import { useToast } from "@/hooks/use-toast"
 
-// 获得当前的流量
-// GET 192.168.100.1:9999/traffic
 
-// 获得实时的上下行 (Byte)
-
-// 200 返回一个 Chunk Stream，每秒推送一个 JSON，up 为上行 down 为下行
-// Copy
-
-// {
-//     "up": 200,
-//     "down": 300
-// }
 
 interface ProxiesResponse {
   proxies: Record<string, ProxyNode>
@@ -44,7 +33,6 @@ export default function MonitorPage() {
       setProxies(data.proxies)
     } catch (error) {
       console.error("Failed to fetch proxies:", error)
-      // 只在第一次加载失败时显示toast
       if (Object.keys(proxies).length === 0) {
         toast({
           title: "连接失败",
@@ -86,24 +74,49 @@ export default function MonitorPage() {
     }
   }
 
+  const handleTestDelay = async (groupName: string) => {
+    try {
+      const response = await fetch(
+        `http://192.168.100.1:9999/group/${encodeURIComponent(groupName)}/delay?url=https%3A%2F%2Fwww.gstatic.com%2Fgenerate_204&timeout=5000`
+      )
+      if (!response.ok) {
+        throw new Error("Failed to test delay")
+      }
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error("Failed to test delay:", error)
+      toast({
+        title: "测试失败",
+        description: "无法测试节点延迟",
+        variant: "destructive",
+      })
+      return {}
+    }
+  }
+
+  // 过滤出所有代理组
+  const proxyGroups = Object.entries(proxies).filter(([_, node]) => 
+    node.type === "Selector" || node.type === "URLTest"
+  )
+
   return (
     <MainLayout>
-      <div className="space-y-4">
-        <div className="text-xl font-bold">代理切换</div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(proxies).map(([name, proxy]) => (
+      <div className="container mx-auto p-4 space-y-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">代理监控</h1>
+        </div>
+        
+        <div className="grid gap-4">
+          {proxyGroups.map(([name, group]) => (
             <GroupCard
               key={name}
               name={name}
-              proxy={proxy}
+              proxyNode={group}
               onProxyChange={handleProxyChange}
+              onTestDelay={handleTestDelay}
             />
           ))}
-          {Object.keys(proxies).length === 0 && (
-            <div className="col-span-full text-center text-muted-foreground py-8">
-              暂无代理组数据
-            </div>
-          )}
         </div>
       </div>
     </MainLayout>
