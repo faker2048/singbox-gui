@@ -37,7 +37,7 @@ export default function SettingsPage() {
           extensions: ["exe"]
         }]
       })
-      
+
       if (selected) {
         const path = selected as string
         setSingboxPath(path)
@@ -72,6 +72,33 @@ export default function SettingsPage() {
   return (
     <MainLayout>
       <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Cpu className="h-4 w-4" />
+              <CardTitle>内核设置</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <div className="font-medium">sing-box 路径</div>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={singboxPath}
+                  readOnly
+                  placeholder="选择 sing-box 可执行文件路径"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSingboxPathChange}
+                >
+                  <FolderSearch className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -161,33 +188,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4" />
-              <CardTitle>内核设置</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <div className="font-medium">sing-box 路径</div>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={singboxPath}
-                  readOnly
-                  placeholder="选择 sing-box 可执行文件路径"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleSingboxPathChange}
-                >
-                  <FolderSearch className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
     </MainLayout>
   )
