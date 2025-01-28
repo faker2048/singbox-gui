@@ -18,8 +18,8 @@ const sidebarItems = [
     icon: Home
   },
   {
-    title: "仪表盘",
-    href: "/monitor",
+    title: "节点切换",
+    href: "/node-switch",
     icon: Activity
   },
   {

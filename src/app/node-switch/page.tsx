@@ -103,11 +103,7 @@ export default function MonitorPage() {
   return (
     <MainLayout>
       <div className="container mx-auto p-4 space-y-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">代理监控</h1>
-        </div>
-        
-        <div className="grid gap-4">
+        <div className="columns-1 md:columns-2 gap-4 space-y-4 [&>*]:break-inside-avoid-column">
           {proxyGroups.map(([name, group]) => (
             <GroupCard
               key={name}
