@@ -14,7 +14,7 @@ import {
 const sidebarItems = [
   {
     title: "主页",
-    href: "/",
+    href: "/home",
     icon: Home
   },
   {
