@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils"
 import {
   Activity,
   Settings,
-  Terminal,
-  FileJson,
   Home
 } from "lucide-react"
 

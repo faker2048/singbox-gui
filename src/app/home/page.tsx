@@ -1,7 +1,6 @@
 "use client"
 
 import { MainLayout } from "@/components/layouts/main-layout"
-import { useServiceStore } from "@/lib/store"
 import { ServiceCard } from "./service-card"
 import ConfigCard from "./config-card"
 

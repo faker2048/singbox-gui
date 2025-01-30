@@ -1,14 +1,12 @@
 "use client"
 
-import { MainLayout } from "@/components/layouts/main-layout"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { invoke } from "@tauri-apps/api/core"
-import { join } from "@tauri-apps/api/path"
-import { Command, open } from '@tauri-apps/plugin-shell'
+import { open } from '@tauri-apps/plugin-shell'
 import * as Icon from "lucide-react"
 import { useEffect, useState } from "react"
 import React from "react"
@@ -48,7 +46,7 @@ export default function ConfigCard() {
       } catch (error) {
         toast({
           title: "加载配置失败",
-          description: "无法读取配置信息",
+          description: error instanceof Error ? error.message : "无法读取配置信息",
           variant: "destructive",
         });
       }
@@ -84,10 +82,6 @@ export default function ConfigCard() {
     }
 
     try {
-      // 获取配置目录
-      const appConfig = await invoke<{ config_dir: string }>("get_app_config");
-      const configDir = appConfig.config_dir;
-
       // 生成配置文件路径
       const configId = Date.now().toString();
       const configFileName = `${configId}.json`;
@@ -150,7 +144,7 @@ export default function ConfigCard() {
     } catch (error) {
       toast({
         title: "切换失败",
-        description: "无法切换配置",
+        description: error instanceof Error ? error.message : "无法切换配置",
         variant: "destructive",
       });
     }
@@ -174,7 +168,7 @@ export default function ConfigCard() {
     } catch (error) {
       toast({
         title: "导入失败",
-        description: "配置文件格式无效",
+        description: error instanceof Error ? error.message : "配置文件格式无效",
         variant: "destructive",
       });
     }
@@ -191,7 +185,7 @@ export default function ConfigCard() {
       } catch (error) {
         toast({
           title: "保存失败",
-          description: "配置内容格式无效",
+          description: error instanceof Error ? error.message : "配置内容格式无效",
           variant: "destructive",
         });
       }
@@ -365,7 +359,7 @@ export default function ConfigCard() {
             ))}
             {configs.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
-                暂无配置，请点击"新建配置"按钮添加
+                暂无配置，请点击 <span className="font-bold">新建配置</span> 按钮添加
               </div>
             )}
           </div>

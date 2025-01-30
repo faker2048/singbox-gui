@@ -34,7 +34,7 @@ export default function MonitorPage() {
         const endpoint = config.experimental?.clash_api?.external_controller || "127.0.0.1:9999"
         setApiEndpoint(`http://${endpoint}`)
         setIsConfigLoaded(true)
-      } catch (error) {
+      } catch {
         setIsConfigLoaded(false)
       }
     }
@@ -73,11 +73,11 @@ export default function MonitorPage() {
         },
         body: JSON.stringify({ name: selected }),
       })
-      
+
       if (!response.ok) return
 
       fetchProxies()
-      
+
       toast({
         title: "切换成功",
         description: `已切换到节点: ${selected}`,
@@ -86,7 +86,7 @@ export default function MonitorPage() {
       // 只在用户操作时提示错误
       toast({
         title: "切换失败",
-        description: "无法切换代理节点",
+        description: error instanceof Error ? error.message : "无法切换代理节点",
         variant: "destructive",
       })
     }
@@ -99,7 +99,7 @@ export default function MonitorPage() {
       )
       if (!response.ok) return {}
       return await response.json()
-    } catch (error) {
+    } catch {
       // 静默失败，返回空对象
       return {}
     }
@@ -123,7 +123,7 @@ export default function MonitorPage() {
   }
 
   // 过滤出所有代理组
-  const proxyGroups = Object.entries(proxies).filter(([_, node]) => 
+  const proxyGroups = Object.entries(proxies).filter(([_, node]) =>
     node.type === "Selector" || node.type === "URLTest"
   )
 

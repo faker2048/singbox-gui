@@ -55,7 +55,7 @@ export default function SettingsPage() {
     } catch (e) {
       toast({
         title: "错误",
-        description: "设置 sing-box 路径失败",
+        description: e instanceof Error ? e.message : "设置 sing-box 路径失败",
         variant: "destructive"
       })
     }

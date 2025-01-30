@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { useServiceStore } from "@/lib/store"
 import { startService, stopService, restartService, checkServiceStatus } from "@/lib/service"
 import { Play, Square, RefreshCw } from "lucide-react"
