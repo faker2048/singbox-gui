@@ -19,7 +19,10 @@ pub mod app {
 
     impl Default for Config {
         fn default() -> Self {
-            let default_config_dir = get_default_config_dir().join("configs").to_string_lossy().to_string();
+            let default_config_dir = get_default_config_dir()
+                .join("configs")
+                .to_string_lossy()
+                .to_string();
             Self {
                 config_dir: default_config_dir,
                 singbox_path: "sing-box".to_string(),
@@ -34,10 +37,16 @@ pub mod app {
             .join(APP_NAME);
 
         if !config_dir.exists() {
-            log::info!("[get_default_config_dir] 配置目录不存在，创建目录: {:?}", config_dir);
+            log::info!(
+                "[get_default_config_dir] 配置目录不存在，创建目录: {:?}",
+                config_dir
+            );
             if let Err(_) = fs::create_dir_all(&config_dir) {
                 config_dir = PathBuf::from(".").join("singbox-gui");
-                log::info!("[get_default_config_dir] 创建默认目录失败，使用备用目录: {:?}", config_dir);
+                log::info!(
+                    "[get_default_config_dir] 创建默认目录失败，使用备用目录: {:?}",
+                    config_dir
+                );
                 let _ = fs::create_dir_all(&config_dir);
             }
         }
@@ -145,19 +154,21 @@ pub mod singbox {
         pub fn add_config(&mut self, mut config: Config) {
             let app_config = app::load_app_config().unwrap_or_default();
             let config_dir = PathBuf::from(&app_config.config_dir);
-            
+
             // 确保使用完整路径，并且保存在 configs 目录下
             if !config.path.contains(app_config.config_dir.as_str()) {
-                config.path = config_dir.join(&config.id).with_extension("json")
+                config.path = config_dir
+                    .join(&config.id)
+                    .with_extension("json")
                     .to_string_lossy()
                     .to_string();
             }
-            
+
             // 创建 configs 目录（如果不存在）
             if let Err(e) = fs::create_dir_all(&config_dir) {
                 log::error!("[State::add_config] 创建配置目录失败: {:?}", e);
             }
-            
+
             log::info!("[State::add_config] 添加配置: {:?}", config);
             self.configs.push(config);
         }
@@ -176,7 +187,10 @@ pub mod singbox {
         }
 
         pub fn get_active_config(&self) -> Option<&Config> {
-            log::info!("[State::get_active_config] 获取活动配置: {:?}", self.active_config_id);
+            log::info!(
+                "[State::get_active_config] 获取活动配置: {:?}",
+                self.active_config_id
+            );
             self.active_config_id
                 .as_ref()
                 .and_then(|id| self.configs.iter().find(|c| &c.id == id))
@@ -193,7 +207,7 @@ pub mod singbox {
         let app_config = app::load_app_config().map_err(|e| e.to_string())?;
         let config_dir = PathBuf::from(&app_config.config_dir);
         let path_buf = PathBuf::from(&path);
-        
+
         // 确保路径在 configs 目录下
         let full_path = if path_buf.is_absolute() {
             if !path_buf.starts_with(&config_dir) {
@@ -221,14 +235,12 @@ pub mod singbox {
         log::info!("[save_config] 保存 singbox 配置: {:?}", config);
         let app_config = app::load_app_config().map_err(|e| e.to_string())?;
         let config_dir = PathBuf::from(&app_config.config_dir);
-        
+
         // 确保使用完整路径
         if !config.path.contains(app_config.config_dir.as_str()) {
-            config.path = config_dir.join(&config.path)
-                .to_string_lossy()
-                .to_string();
+            config.path = config_dir.join(&config.path).to_string_lossy().to_string();
         }
-        
+
         let mut state = state.lock().unwrap();
         state.add_config(config);
         state.save(&app)
@@ -272,5 +284,16 @@ pub mod singbox {
         log::info!("[get_active_config] 获取活动配置");
         let state = state.lock().unwrap();
         Ok(state.get_active_config().cloned())
+    }
+
+    #[tauri::command]
+    pub async fn get_active_config_content(
+        state: tauri::State<'_, Mutex<State>>,
+    ) -> Result<String, String> {
+        log::info!("[get_active_config_content] 获取活动配置内容");
+        let state = state.lock().unwrap();
+        let active_config = state.get_active_config().ok_or("没有激活的配置文件")?;
+
+        fs::read_to_string(&active_config.path).map_err(|e| format!("读取配置文件失败: {}", e))
     }
 }
