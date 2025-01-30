@@ -30,22 +30,20 @@ export default function ConfigCard() {
   const [configContent, setConfigContent] = useState("")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
+  // 只在组件挂载时加载一次配置
   useEffect(() => {
-    // 初始化时加载配置列表和当前激活的配置
     const initializeConfigs = async () => {
       try {
-        const [configsData, activeConfig] = await Promise.all([
+        const [configsData, activeConfig, status] = await Promise.all([
           invoke<Config[]>("get_configs"),
-          invoke<Config | null>("get_active_config")
+          invoke<Config | null>("get_active_config"),
+          invoke<boolean>("get_service_status")
         ]);
 
         setConfigs(configsData);
         if (activeConfig) {
           setActiveConfigId(activeConfig.id);
         }
-
-        // 获取服务运行状态
-        const status = await invoke<boolean>("get_service_status");
         setIsRunning(status);
       } catch (error) {
         toast({
@@ -57,6 +55,22 @@ export default function ConfigCard() {
     };
 
     initializeConfigs();
+  }, []);
+
+  // 只在服务状态变化时更新运行状态
+  useEffect(() => {
+    const checkServiceStatus = async () => {
+      try {
+        const status = await invoke<boolean>("get_service_status");
+        setIsRunning(status);
+      } catch (error) {
+        console.error("检查服务状态失败:", error);
+      }
+    };
+
+    // 每5秒检查一次服务状态
+    const timer = setInterval(checkServiceStatus, 5000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleSaveConfig = async (content: string) => {
@@ -77,7 +91,7 @@ export default function ConfigCard() {
       // 生成配置文件路径
       const configId = Date.now().toString();
       const configFileName = `${configId}.json`;
-      const configPath = await join(configDir, configFileName);
+      const configPath = configFileName;  // 使用相对路径，后端会处理完整路径
 
       // 保存配置文件
       await invoke("save_config", {

@@ -1,4 +1,4 @@
-use crate::config::app::{get_app_config, load_app_config, Config as AppConfig};
+use crate::config::app::load_app_config;
 use std::path::Path;
 use std::process::{Child, Command};
 use std::sync::Mutex;

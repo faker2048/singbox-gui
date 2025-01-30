@@ -16,6 +16,10 @@ use std::sync::Mutex;
 use tauri::Manager;
 
 fn main() {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+        .format_timestamp_millis()
+        .init();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
