@@ -1,6 +1,6 @@
 # Singbox GUI
 
-一个基于 Tauri + Next.js 开发的 sing-box 图形界面。
+一个基于 Tauri + Next.js 开发的 sing-box 图形界面。 支持 Windows, Linux 和 MacOS 平台。
 
 ## 功能
 
