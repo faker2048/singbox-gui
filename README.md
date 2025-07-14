@@ -1,6 +1,6 @@
 # Singbox GUI
 
-一个跨平台的 sing-box 图形化配置工具
+一个跨平台的 sing-box 图形化配置工具, 主要支持了配置管理和节点切换, 注意没有订阅功能。
 
 Singbox GUI 是一个基于 Tauri + Next.js 开发的现代化桌面应用，为 sing-box 提供直观的图形界面。支持 Windows、Linux 和 MacOS。
 
